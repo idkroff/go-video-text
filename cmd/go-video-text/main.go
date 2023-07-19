@@ -12,12 +12,12 @@ import (
 func main() {
 	config := config.MustLoad()
 
-	imageGen, err := imagegen.NewGenerator(config.FontPath)
+	imageGen, err := imagegen.NewGenerator(config.FontPath, config.FontSize)
 	if err != nil {
 		log.Fatalf("unable to create image generator: %s", err)
 	}
 
-	img, err := imageGen.NewStringImage("test123", 36)
+	img, err := imageGen.NewStringImage("test123")
 	if err != nil {
 		log.Fatalf("unable to generate string image: %s", err)
 	}

@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Env      string `yaml:"env" env:"ENV" env-required:"true"`
-	FontPath string `yaml:"font_path" env-required:"true"`
+	Env      string  `yaml:"env" env:"ENV" env-required:"true"`
+	FontPath string  `yaml:"font_path" env-required:"true"`
+	FontSize float64 `yaml:"font_size" env-required:"true"`
 }
 
 func MustLoad() *Config {
@@ -19,7 +20,7 @@ func MustLoad() *Config {
 	}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config filde does not exist on %s", configPath)
+		log.Fatalf("config file does not exist on %s", configPath)
 	}
 
 	var config Config
