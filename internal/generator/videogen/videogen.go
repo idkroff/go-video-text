@@ -125,7 +125,7 @@ func (g *VideoGenerator) NewStringVideo(input string) (string, error) {
 		return "", err
 	}
 
-	//defer os.RemoveAll(framesPath)
+	defer os.RemoveAll(framesPath)
 
 	cmd := exec.Command(
 		"ffmpeg",
