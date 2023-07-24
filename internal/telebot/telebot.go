@@ -27,13 +27,23 @@ func HandleUpdates(bot *tgbotapi.BotAPI, videoGen *videogen.VideoGenerator, botS
 func handleUpdate(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update, videoGen *videogen.VideoGenerator, botStorageChatID int64) {
 	if update.Message != nil {
 		log.Println(fmt.Sprintf("message from: %d", update.Message.Chat.ID))
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Use inline menu @text_video_bot to receive video with your text")
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Use inline menu @text_video_bot to receive video with your text (100 characters max)")
 		bot.Send(msg)
 	}
 
 	if update.InlineQuery != nil {
 		fmt.Println("inlinequery")
 		fmt.Println(update.InlineQuery.Query)
+
+		if len(update.InlineQuery.Query) > 100 {
+			bot.Send(tgbotapi.InlineConfig{
+				InlineQueryID: update.InlineQuery.ID,
+				Results:       []interface{}{},
+				CacheTime:     600,
+				IsPersonal:    false,
+			})
+			return
+		}
 
 		videoPath, err := videoGen.NewStringVideo(update.InlineQuery.Query)
 		defer os.RemoveAll(videoPath)
@@ -52,12 +62,14 @@ func handleUpdate(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Upd
 			return
 		}
 
+		log.Println(fmt.Sprintf("uploaded video: %s", videoMsgSent.Video.FileID))
+
 		answer := tgbotapi.NewInlineQueryResultCachedVideo(uuid.New().String(), videoMsgSent.Video.FileID, "Send video")
 		bot.Send(tgbotapi.InlineConfig{
 			InlineQueryID: update.InlineQuery.ID,
 			Results:       []interface{}{answer},
-			CacheTime:     60,
-			IsPersonal:    true,
+			CacheTime:     600,
+			IsPersonal:    false,
 		})
 	}
 }
