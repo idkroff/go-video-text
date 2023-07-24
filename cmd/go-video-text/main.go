@@ -1,12 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/idkroff/go-video-text/internal/config"
 	"github.com/idkroff/go-video-text/internal/generator/imagegen"
 	"github.com/idkroff/go-video-text/internal/generator/videogen"
+	"github.com/idkroff/go-video-text/internal/telebot"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func main() {
@@ -17,8 +19,6 @@ func main() {
 		log.Fatalf("unable to create image generator: %s", err)
 	}
 
-	input := "Test 123 bla bla bla."
-
 	videoGenOptions := videogen.VideoGeneratorOptions{
 		FPS:         config.VideoOptions.FPS,
 		RandomDelay: config.VideoOptions.RandomDelay,
@@ -27,11 +27,11 @@ func main() {
 		MaxDelay:    config.VideoOptions.MaxDelay,
 	}
 	videoGen := videogen.NewGenerator(imageGen, videoGenOptions)
-	path, err := videoGen.NewStringVideo(input)
+
+	tgbot, err := tgbotapi.NewBotAPI(config.BotToken)
 	if err != nil {
-		fmt.Println(err)
-		//panic(err)
-	} else {
-		print(path)
+		log.Fatalf("unable to set up bot api: %s", err)
 	}
+
+	telebot.HandleUpdates(tgbot, videoGen, config.BotStorageChatID)
 }

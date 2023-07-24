@@ -2,16 +2,19 @@ package videogen
 
 import (
 	"fmt"
+	"image"
 	"image/png"
 	"log"
 	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/idkroff/go-video-text/internal/generator/imagegen"
+	"github.com/idkroff/go-video-text/lib/clone"
 )
 
 type VideoGeneratorOptions struct {
@@ -70,27 +73,46 @@ func (g *VideoGenerator) GenerateFrames(input string) (string, int, string, erro
 		f.Close()
 	}
 
+	wg := sync.WaitGroup{}
+
 	for rowI, row := range rows {
 		for rowShift := 0; rowShift < len(row); rowShift++ {
+			wg.Add(1)
+			framesCount := int(g.GetDelay() * float64(FPS))
+
 			img, err := g.ImageGen.UpdateStringImage(img, row[:rowShift+1], 0, rowI)
 			if err != nil {
 				os.RemoveAll(framesPath)
+
+				//TODO: add error handling?
 				return "", 0, "", err
 			}
 
-			for i := 0; i < int(g.GetDelay()*float64(FPS)); i++ {
-				currentFrame++
-				f, err := os.Create(filepath.Join(framesPath, fmt.Sprintf("%d.png", currentFrame)))
-				if err != nil {
-					os.RemoveAll(framesPath)
-					return "", 0, "", err
-				}
+			go func(rowI int, row string, rowShift int, img *image.RGBA, framesStart int, framesCount int) {
+				defer wg.Done()
 
-				png.Encode(f, img)
-				f.Close()
-			}
+				for i := 0; i < framesCount; i++ {
+					currentFrameLocal := framesStart + i
+
+					log.Println(fmt.Sprintf("frame %d %s", currentFrameLocal, row[:rowShift+1]))
+					f, err := os.Create(filepath.Join(framesPath, fmt.Sprintf("%d.png", currentFrameLocal)))
+					if err != nil {
+						os.RemoveAll(framesPath)
+
+						//TODO: add error handling?
+						return
+					}
+
+					png.Encode(f, img)
+					f.Close()
+				}
+			}(rowI, row, rowShift, clone.CloneImageAsRGBA(img), currentFrame, framesCount)
+
+			currentFrame += framesCount
 		}
 	}
+
+	wg.Wait()
 
 	return framesPath, currentFrame, videoID, nil
 }
@@ -103,7 +125,7 @@ func (g *VideoGenerator) NewStringVideo(input string) (string, error) {
 		return "", err
 	}
 
-	defer os.RemoveAll(framesPath)
+	//defer os.RemoveAll(framesPath)
 
 	cmd := exec.Command(
 		"ffmpeg",

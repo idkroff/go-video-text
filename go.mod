@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/AlexEidt/Vidio v1.4.2 // indirect
 	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/ilyakaznacheev/cleanenv v1.4.2 // indirect

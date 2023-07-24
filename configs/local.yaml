@@ -3,8 +3,12 @@ font_path: "./fonts/UbuntuMono-Regular.ttf"
 font_size: 64
 max_width: 1000
 
+bot_token: 6620915433:AAHbD0potNuRqfJgSpAzieXfde-KsfnMGWs
+bot_storage_chat_id: -990535023
+
 video_options:
   random_delay: true
-  min_delay: 0.15
-  max_delay: 0.5
-  delay: 0.2
+  min_delay: 0.2
+  max_delay: 0.3
+  delay: 0.5
+  fps: 5

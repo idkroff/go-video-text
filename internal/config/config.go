@@ -8,15 +8,17 @@ import (
 )
 
 type Config struct {
-	Env          string  `yaml:"env" env:"ENV" env-required:"true"`
-	FontPath     string  `yaml:"font_path" env-required:"true"`
-	FontSize     float64 `yaml:"font_size" env-required:"true"`
-	MaxWidth     int     `yaml:"max_width" env-required:"true"`
-	VideoOptions `yaml:"video_options"`
+	Env              string  `yaml:"env" env:"ENV" env-required:"true"`
+	BotToken         string  `yaml:"bot_token" env-required:"true" env:"BOT_TOKEN"`
+	BotStorageChatID int64   `yaml:"bot_storage_chat_id" env-require:"true" env:"BotStorageChatID"`
+	FontPath         string  `yaml:"font_path" env-required:"true"`
+	FontSize         float64 `yaml:"font_size" env-required:"true"`
+	MaxWidth         int     `yaml:"max_width" env-required:"true"`
+	VideoOptions     `yaml:"video_options"`
 }
 
 type VideoOptions struct {
-	FPS         int     `yaml:"fps" env-default:"30"`
+	FPS         int     `yaml:"fps" env-default:"5"`
 	RandomDelay bool    `yaml:"random_delay" env-default:"false"`
 	Delay       float64 `yaml:"delay" env-default:"1"`
 	MinDelay    float64 `yaml:"min_delay" env-default:"0.8"`
