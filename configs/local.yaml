@@ -4,7 +4,7 @@ font_size: 64
 max_width: 1000
 
 bot_token: 6620915433:AAHbD0potNuRqfJgSpAzieXfde-KsfnMGWs
-bot_storage_chat_id: -990535023
+bot_storage_chat_id: -989719260
 
 video_options:
   random_delay: true

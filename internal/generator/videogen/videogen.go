@@ -1,6 +1,7 @@
 package videogen
 
 import (
+	"context"
 	"fmt"
 	"image"
 	"image/png"
@@ -37,9 +38,12 @@ func NewGenerator(imageGen *imagegen.ImageGenerator, options VideoGeneratorOptio
 	}
 }
 
-func (g *VideoGenerator) GenerateFrames(input string) (string, int, string, error) {
+func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (string, int, string, error) {
 	const op = "internal.generator.videogen.GenerateFrames"
 
+	if ctx.Err() != nil {
+		return "", 0, "", fmt.Errorf(op + ": context closed")
+	}
 	FPS := g.Options.FPS
 
 	videoID := uuid.New().String()
@@ -62,6 +66,10 @@ func (g *VideoGenerator) GenerateFrames(input string) (string, int, string, erro
 
 	currentFrame := 0
 	for i := 0; i < int(g.GetDelay()*float64(FPS)); i++ {
+		if ctx.Err() != nil {
+			return "", 0, "", fmt.Errorf(op + ": context closed")
+		}
+
 		currentFrame++
 		f, err := os.Create(filepath.Join(framesPath, fmt.Sprintf("%d.png", currentFrame)))
 		if err != nil {
@@ -88,10 +96,18 @@ func (g *VideoGenerator) GenerateFrames(input string) (string, int, string, erro
 				return "", 0, "", err
 			}
 
+			if ctx.Err() != nil {
+				return "", 0, "", fmt.Errorf(op + ": context closed")
+			}
+
 			go func(rowI int, row string, rowShift int, img *image.RGBA, framesStart int, framesCount int) {
 				defer wg.Done()
 
 				for i := 0; i < framesCount; i++ {
+					if ctx.Err() != nil {
+						return
+					}
+
 					currentFrameLocal := framesStart + i
 
 					log.Println(fmt.Sprintf("frame %d %s", currentFrameLocal, row[:rowShift+1]))
@@ -113,14 +129,26 @@ func (g *VideoGenerator) GenerateFrames(input string) (string, int, string, erro
 	}
 
 	wg.Wait()
+	if ctx.Err() != nil {
+		return "", 0, "", fmt.Errorf(op + ": context closed")
+	}
 
 	return framesPath, currentFrame, videoID, nil
 }
 
-func (g *VideoGenerator) NewStringVideo(input string) (string, error) {
+func (g *VideoGenerator) NewStringVideo(ctx context.Context, input string) (string, error) {
 	//TODO: add context with timeout to prevent too long generation
 
-	framesPath, _, id, err := g.GenerateFrames(input)
+	if ctx.Err() != nil {
+		return "", fmt.Errorf("context closed")
+	}
+
+	framesGenCtx, cancelFramesGenCtx := context.WithTimeout(context.Background(), time.Minute)
+	defer func() {
+		cancelFramesGenCtx()
+	}()
+
+	framesPath, _, id, err := g.GenerateFrames(framesGenCtx, input)
 	if err != nil {
 		return "", err
 	}
