@@ -45,8 +45,6 @@ jobs:
           chmod 600 deploy_key.pem
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "mkdir -p ${{ env.IMAGE_DIRECTORY }}"
           rsync -avz -e 'ssh -i deploy_key.pem -o StrictHostKeyChecking=no' ./docker_image.tar ${{ env.HOST }}:${{ env.IMAGE_DIRECTORY }}/docker_image.tar
-          
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker run -d $(echo $GITHUB_REPOSITORY):$(echo $GITHUB_SHA | head -c7)"
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
 
@@ -55,6 +53,11 @@ jobs:
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker load -i ${{ env.IMAGE_DIRECTORY }}/docker_image.tar"
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "rm -rf ${{ env.IMAGE_DIRECTORY }}"
       
+      - name: Stop and remove old image
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker stop $(echo $GITHUB_REPOSITORY)"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker rm $(echo $GITHUB_REPOSITORY)"
+
       - name: Start docker container
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
