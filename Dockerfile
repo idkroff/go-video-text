@@ -13,7 +13,7 @@ COPY . .
 RUN go build -ldflags="-s -w" -o /app/main cmd/go-video-text/main.go
 
 
-FROM scratch
+FROM jrottenberg/ffmpeg:alpine
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
