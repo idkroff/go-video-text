@@ -63,10 +63,11 @@ jobs:
       - name: Start docker container
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
-          docker run -d $(echo $GITHUB_REPOSITORY):$(echo $GITHUB_SHA | head -c7) \
+          docker run -d \
             -e CONFIG_PATH ${{ env.CONFIG_PATH }} \
             -e bot_token ${{ env.BOT_TOKEN }} \
-            -e bot_storage_chat_id ${{ env.BOT_STORAGE_CHAT_ID }}"
+            -e bot_storage_chat_id ${{ env.BOT_STORAGE_CHAT_ID }} \
+            $(echo $GITHUB_REPOSITORY):$(echo $GITHUB_SHA | head -c7)"
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           BOT_STORAGE_CHAT_ID: ${{ secrets.BOT_STORAGE_CHAT_ID }}
