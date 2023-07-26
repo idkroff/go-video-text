@@ -10,7 +10,7 @@ import (
 type Config struct {
 	Env              string  `yaml:"env" env:"ENV" env-required:"true"`
 	BotToken         string  `yaml:"bot_token" env-required:"true" env:"BOT_TOKEN"`
-	BotStorageChatID int64   `yaml:"bot_storage_chat_id" env-require:"true" env:"BotStorageChatID"`
+	BotStorageChatID int64   `yaml:"bot_storage_chat_id" env-require:"true" env:"BOT_STORAGE_CHAT_ID"`
 	FontPath         string  `yaml:"font_path" env-required:"true"`
 	FontSize         float64 `yaml:"font_size" env-required:"true"`
 	MaxWidth         int     `yaml:"max_width" env-required:"true"`
