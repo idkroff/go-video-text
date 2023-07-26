@@ -1,0 +1,67 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to deploy
+        required: true
+
+env:
+  HOST: root@80.90.181.153
+  IMAGE_DIRECTORY: /home/go-video-text-tmp
+
+  CONFIG_PATH: configs/prod.yaml
+  ENV_FILE_PATH: config.env
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.tag }}
+
+      - name: Check if tag exists
+        run: |
+          git fetch --all --tags
+          if ! git tag | grep -q "^${{ github.event.inputs.tag }}$"; then
+            echo "error: Tag '${{ github.event.inputs.tag }}' not found"
+            exit 1
+          fi
+      
+      - name: Build Docker image
+        run: docker build -t $(echo $GITHUB_REPOSITORY):$(echo $GITHUB_SHA | head -c7) .
+      
+      - name: Save docker image as tar
+        run: docker save -o docker_image.tar $(echo $GITHUB_REPOSITORY):$(echo $GITHUB_SHA | head -c7)
+
+      - name: Save docker image to target
+        run: |
+          sudo apt-get install -y ssh rsync
+          echo "$DEPLOY_SSH_KEY" > deploy_key.pem
+          chmod 600 deploy_key.pem
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "mkdir -p ${{ env.IMAGE_DIRECTORY }}"
+          rsync -avz -e 'ssh -i deploy_key.pem -o StrictHostKeyChecking=no' ./docker_image.tar ${{ env.HOST }}:${{ env.IMAGE_DIRECTORY }}/docker_image.tar
+          
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker run -d $(echo $GITHUB_REPOSITORY):$(echo $GITHUB_SHA | head -c7)"
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Load docker image and delete tmp
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker load -i ${{ env.IMAGE_DIRECTORY }}/docker_image.tar"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "rm -rf ${{ env.IMAGE_DIRECTORY }}"
+      
+      - name: Start docker container
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
+          docker run -d $(echo $GITHUB_REPOSITORY):$(echo $GITHUB_SHA | head -c7) \
+            -e CONFIG_PATH ${{ env.CONFIG_PATH }} \
+            -e bot_token ${{ env.BOT_TOKEN }} \
+            -e bot_storage_chat_id ${{ env.BOT_STORAGE_CHAT_ID }}"
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          BOT_STORAGE_CHAT_ID: ${{ secrets.BOT_STORAGE_CHAT_ID }}
