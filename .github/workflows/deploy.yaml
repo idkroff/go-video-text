@@ -51,9 +51,9 @@ jobs:
       - name: Stop and remove old container and image
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
-          docker ps -q | grep $(echo $GITHUB_REPOSITORY) | xargs -r docker stop"
+          docker ps | grep $(echo $GITHUB_REPOSITORY) | awk '{print $1}' | xargs -r docker stop"
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
-          docker ps -aq | grep $(echo $GITHUB_REPOSITORY) | xargs -r docker rm"
+          docker ps -a | grep $(echo $GITHUB_REPOSITORY) | awk '{print $1}' | xargs -r docker rm"
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
           docker images --format '{{.Repository}} {{.ID}}' | grep $(echo $GITHUB_REPOSITORY) | awk '{print $2}' | xargs -r docker rmi" 
 
