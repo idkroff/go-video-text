@@ -50,9 +50,9 @@ jobs:
       
       - name: Stop and remove old container and image
         run: |
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker ps | grep $(echo $GITHUB_REPOSITORY) | awk '{print $1}'"
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker ps -a | grep $(echo $GITHUB_REPOSITORY) | awk '{print $1}'"
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker images --format '{{.Repository}} {{.ID}}' | grep $(echo $GITHUB_REPOSITORY) | awk '{print $2}'" 
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker ps | grep $(echo $GITHUB_REPOSITORY) | cut -d' ' -f1 | xargs -r docker stop"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker ps -a | grep $(echo $GITHUB_REPOSITORY) | cut -d' ' -f1 | xargs -r docker rm"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker images --format '{{.Repository}} {{.ID}}' | grep $(echo $GITHUB_REPOSITORY) | cut -d' ' -f2 | xargs -r docker rmi" 
 
       - name: Load docker image and delete tmp
         run: |
