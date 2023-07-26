@@ -56,8 +56,9 @@ jobs:
       - name: Stop and remove old image
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
-          docker ps -q --filter 'name=$(echo $GITHUB_REPOSITORY)' | grep -q . && \
-          docker stop $(echo $GITHUB_REPOSITORY) && docker rm -fv $(echo $GITHUB_REPOSITORY)"
+          docker ps -q --filter 'name=$(echo $GITHUB_REPOSITORY)' | xargs -r docker stop $(echo $GITHUB_REPOSITORY)"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
+          docker ps -aq --filter 'name=$(echo $GITHUB_REPOSITORY)' | xargs -r docker rm $(echo $GITHUB_REPOSITORY)"
 
       - name: Start docker container
         run: |
