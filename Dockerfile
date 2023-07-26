@@ -10,7 +10,7 @@ ADD go.mod .
 ADD go.sum .
 RUN go mod download
 COPY . .
-RUN go build -ldflags="-s -w" -o /app/main cmd/go-video-text/cmd/go-video-text/main.go
+RUN go build -ldflags="-s -w" -o /app/main cmd/go-video-text/main.go
 
 
 FROM scratch
