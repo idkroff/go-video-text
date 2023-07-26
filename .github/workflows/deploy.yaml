@@ -53,12 +53,14 @@ jobs:
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker load -i ${{ env.IMAGE_DIRECTORY }}/docker_image.tar"
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "rm -rf ${{ env.IMAGE_DIRECTORY }}"
       
-      - name: Stop and remove old image
+      - name: Stop and remove old container and image
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
-          docker ps -q --filter 'name=$(echo $GITHUB_REPOSITORY)' | xargs -r docker stop $(echo $GITHUB_REPOSITORY)"
+          docker ps -q --filter 'name=$(echo $GITHUB_REPOSITORY)' | xargs -r docker stop"
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
-          docker ps -aq --filter 'name=$(echo $GITHUB_REPOSITORY)' | xargs -r docker rm $(echo $GITHUB_REPOSITORY)"
+          docker ps -aq --filter 'name=$(echo $GITHUB_REPOSITORY)' | xargs -r docker rm"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
+          docker images --format '{{.Repository}} {{.ID}}' | grep $(echo $GITHUB_REPOSITORY) | awk '{print $2}' | xargs docker rmi" 
 
       - name: Start docker container
         run: |
