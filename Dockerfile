@@ -18,5 +18,6 @@ FROM scratch
 WORKDIR /app
 COPY --from=builder /app/main /app/main
 COPY ./configs /app/configs
+COPY ./fonts /app/fonts
 
 CMD ["./main"]
