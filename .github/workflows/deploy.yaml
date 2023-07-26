@@ -47,11 +47,6 @@ jobs:
           rsync -avz -e 'ssh -i deploy_key.pem -o StrictHostKeyChecking=no' ./docker_image.tar ${{ env.HOST }}:${{ env.IMAGE_DIRECTORY }}/docker_image.tar
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-
-      - name: Load docker image and delete tmp
-        run: |
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker load -i ${{ env.IMAGE_DIRECTORY }}/docker_image.tar"
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "rm -rf ${{ env.IMAGE_DIRECTORY }}"
       
       - name: Stop and remove old container and image
         run: |
@@ -61,6 +56,11 @@ jobs:
           docker ps -aq --filter 'name=$(echo $GITHUB_REPOSITORY)' | xargs -r docker rm"
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "\
           docker images --format '{{.Repository}} {{.ID}}' | grep $(echo $GITHUB_REPOSITORY) | awk '{print $2}' | xargs docker rmi" 
+
+      - name: Load docker image and delete tmp
+        run: |
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "docker load -i ${{ env.IMAGE_DIRECTORY }}/docker_image.tar"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "rm -rf ${{ env.IMAGE_DIRECTORY }}"
 
       - name: Start docker container
         run: |
