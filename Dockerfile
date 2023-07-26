@@ -15,6 +15,8 @@ RUN go build -ldflags="-s -w" -o /app/main cmd/go-video-text/main.go
 
 FROM scratch
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
 WORKDIR /app
 COPY --from=builder /app/main /app/main
 COPY ./configs /app/configs
