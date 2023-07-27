@@ -66,7 +66,7 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	}
 
 	currentFrame := 0
-	for i := 0; i < int(g.GetDelay()*float64(FPS))*3; i++ {
+	for i := 0; i < FPS; i++ {
 		if ctx.Err() != nil {
 			return "", 0, "", fmt.Errorf(op + ": context closed")
 		}
@@ -130,12 +130,11 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	}
 
 	wg.Wait()
-	for i := 0; i < int(g.GetDelay()*float64(FPS))*3; i++ {
+	for i := 0; i < FPS*3; i++ {
 		if ctx.Err() != nil {
 			return "", 0, "", fmt.Errorf(op + ": context closed")
 		}
 
-		currentFrame++
 		f, err := os.Create(filepath.Join(framesPath, fmt.Sprintf("%d.png", currentFrame)))
 		if err != nil {
 			os.RemoveAll(framesPath)
@@ -144,6 +143,7 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 
 		png.Encode(f, img)
 		f.Close()
+		currentFrame++
 	}
 
 	if ctx.Err() != nil {
@@ -175,8 +175,7 @@ func (g *VideoGenerator) NewStringVideo(ctx context.Context, input string) (stri
 	cmd := exec.Command(
 		"ffmpeg",
 		"-framerate", fmt.Sprintf("%d", g.Options.FPS),
-		"-pattern_type", "glob",
-		"-i", filepath.Join(framesPath, "*.png"),
+		"-i", filepath.Join(framesPath, "%0d.png"),
 		"-c:v", "libx264",
 		"-pix_fmt", "yuv420p",
 		filepath.Join("tmp", fmt.Sprintf("%s.mp4", id)),
