@@ -52,8 +52,8 @@ func (g *ImageGenerator) NewStringImage(input string, w, h int) (*image.RGBA, er
 	c.SetSrc(image.Black)
 
 	pt := freetype.Pt(int(g.FontSize*XSpaceFactor), int(g.FontSize*YSpaceFactor))
-	for _, s := range input {
-		_, err := c.DrawString(string(s), pt)
+	for _, r := range []rune(input) {
+		_, err := c.DrawString(string(r), pt)
 		if err != nil {
 			return nil, err
 		}
@@ -75,8 +75,8 @@ func (g *ImageGenerator) UpdateStringImage(img *image.RGBA, input string, xStart
 		int(g.FontSize*XSpaceFactor)+xStartIndex*int(g.FontSize*XSpaceFactor),
 		int(g.FontSize*YSpaceFactor)+yStartIndex*int(g.FontSize*YSpaceFactor),
 	)
-	for _, s := range input {
-		_, err := c.DrawString(string(s), pt)
+	for _, r := range []rune(input) {
+		_, err := c.DrawString(string(r), pt)
 		if err != nil {
 			return nil, err
 		}
@@ -92,8 +92,8 @@ func (g *ImageGenerator) GetRows(input string) []string {
 	rows := []string{""}
 	word := ""
 
-	for _, v := range input {
-		if string(v) == " " || len(word) >= maxLettersPerRow {
+	for _, r := range []rune(input) {
+		if string(r) == " " || len(word) >= maxLettersPerRow {
 			lastRow := rows[len(rows)-1]
 			spaceShift := 0
 
@@ -114,8 +114,8 @@ func (g *ImageGenerator) GetRows(input string) []string {
 			word = ""
 		}
 
-		if string(v) != " " {
-			word += string(v)
+		if string(r) != " " {
+			word += string(r)
 		}
 	}
 	lastRow := rows[len(rows)-1]

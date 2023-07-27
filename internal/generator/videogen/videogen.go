@@ -85,11 +85,12 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	wg := sync.WaitGroup{}
 
 	for rowI, row := range rows {
-		for rowShift := 0; rowShift < len(row); rowShift++ {
+		for rowShift := 0; rowShift < len([]rune(row)); rowShift++ {
 			wg.Add(1)
+			runeRow := []rune(row)
 			framesCount := int(g.GetDelay() * float64(FPS))
 
-			img, err := g.ImageGen.UpdateStringImage(img, row[:rowShift+1], 0, rowI)
+			img, err := g.ImageGen.UpdateStringImage(img, string(runeRow[:rowShift+1]), 0, rowI)
 			if err != nil {
 				os.RemoveAll(framesPath)
 
@@ -101,7 +102,8 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 				return "", 0, "", fmt.Errorf(op + ": context closed")
 			}
 
-			go func(rowI int, row string, rowShift int, img *image.RGBA, framesStart int, framesCount int) {
+			log.Println(fmt.Sprintf("frame %d %s", currentFrame, string(runeRow[:rowShift+1])))
+			go func(img *image.RGBA, framesStart int, framesCount int) {
 				defer wg.Done()
 
 				for i := 0; i < framesCount; i++ {
@@ -111,19 +113,17 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 
 					currentFrameLocal := framesStart + i
 
-					log.Println(fmt.Sprintf("frame %d %s", currentFrameLocal, row[:rowShift+1]))
 					f, err := os.Create(filepath.Join(framesPath, fmt.Sprintf("%d.png", currentFrameLocal)))
 					if err != nil {
 						os.RemoveAll(framesPath)
-
-						//TODO: add error handling?
+						log.Printf("error while creating frame: %s\n", err)
 						return
 					}
 
 					png.Encode(f, img)
 					f.Close()
 				}
-			}(rowI, row, rowShift, clone.CloneImageAsRGBA(img), currentFrame, framesCount)
+			}(clone.CloneImageAsRGBA(img), currentFrame, framesCount)
 
 			currentFrame += framesCount
 		}
