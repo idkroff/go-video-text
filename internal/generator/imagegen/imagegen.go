@@ -141,7 +141,7 @@ func (g *ImageGenerator) GetRows(input string) []string {
 
 func (g *ImageGenerator) CalculateWH(rows []string) (int, int) {
 	if len(rows) == 1 {
-		return int(float64(len(rows[0]))*g.FontSize*XSpaceFactor) + int(g.FontSize*XSpaceFactor*2),
+		return int(float64(len([]rune(rows[0])))*g.FontSize*XSpaceFactor) + int(g.FontSize*XSpaceFactor*2),
 			int(g.FontSize * YSpaceFactor * 2)
 	}
 
