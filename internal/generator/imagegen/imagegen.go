@@ -93,15 +93,15 @@ func (g *ImageGenerator) GetRows(input string) []string {
 	word := ""
 
 	for _, r := range []rune(input) {
-		if string(r) == " " || len(word) >= maxLettersPerRow {
+		if string(r) == " " || len([]rune(word)) >= maxLettersPerRow {
 			lastRow := rows[len(rows)-1]
 			spaceShift := 0
 
-			if len(lastRow) > 0 {
+			if len([]rune(lastRow)) > 0 {
 				spaceShift = 1
 			}
 
-			if len(lastRow)+spaceShift+len(word) <= maxLettersPerRow {
+			if len([]rune(lastRow))+spaceShift+len([]rune(word)) <= maxLettersPerRow {
 				// put on current row
 				if spaceShift == 1 {
 					rows[len(rows)-1] += " "
@@ -121,11 +121,11 @@ func (g *ImageGenerator) GetRows(input string) []string {
 	lastRow := rows[len(rows)-1]
 	spaceShift := 0
 
-	if len(lastRow) > 0 {
+	if len([]rune(lastRow)) > 0 {
 		spaceShift = 1
 	}
 
-	if len(lastRow)+spaceShift+len(word) <= maxLettersPerRow {
+	if len([]rune(lastRow))+spaceShift+len([]rune(word)) <= maxLettersPerRow {
 		// put on current row
 		if spaceShift == 1 {
 			rows[len(rows)-1] += " "
