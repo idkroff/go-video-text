@@ -57,6 +57,7 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 
 	rows := g.ImageGen.GetRows(input)
 	w, h := g.ImageGen.CalculateWH(rows)
+	w, h = (w+1)/2*2, (h+1)/2*2 // width and height must be even
 
 	img, err := g.ImageGen.NewStringImage("", w, h)
 	if err != nil {
