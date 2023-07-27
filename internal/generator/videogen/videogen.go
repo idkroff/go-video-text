@@ -65,7 +65,7 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	}
 
 	currentFrame := 0
-	for i := 0; i < int(g.GetDelay()*float64(FPS)); i++ {
+	for i := 0; i < int(g.GetDelay()*float64(FPS))*3; i++ {
 		if ctx.Err() != nil {
 			return "", 0, "", fmt.Errorf(op + ": context closed")
 		}
@@ -129,6 +129,22 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	}
 
 	wg.Wait()
+	for i := 0; i < int(g.GetDelay()*float64(FPS))*3; i++ {
+		if ctx.Err() != nil {
+			return "", 0, "", fmt.Errorf(op + ": context closed")
+		}
+
+		currentFrame++
+		f, err := os.Create(filepath.Join(framesPath, fmt.Sprintf("%d.png", currentFrame)))
+		if err != nil {
+			os.RemoveAll(framesPath)
+			return "", 0, "", err
+		}
+
+		png.Encode(f, img)
+		f.Close()
+	}
+
 	if ctx.Err() != nil {
 		return "", 0, "", fmt.Errorf(op + ": context closed")
 	}
