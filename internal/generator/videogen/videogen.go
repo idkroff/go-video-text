@@ -159,6 +159,8 @@ func (g *VideoGenerator) NewStringVideo(ctx context.Context, input string) (stri
 		"ffmpeg",
 		"-framerate", fmt.Sprintf("%d", g.Options.FPS),
 		"-i", filepath.Join(framesPath, "%d.png"),
+		"-c:v", "libx264",
+		"-pix_fmt", "yuv420p",
 		filepath.Join("tmp", fmt.Sprintf("%s.mp4", id)),
 	)
 	b, err := cmd.CombinedOutput()
