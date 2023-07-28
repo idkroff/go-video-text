@@ -61,7 +61,7 @@ func handleInlineQuery(ctx context.Context, videoGen *videogen.VideoGenerator, b
 	fmt.Println("inlinequery")
 	fmt.Println(update.InlineQuery.Query)
 
-	if len(update.InlineQuery.Query) > 100 {
+	if len([]rune(update.InlineQuery.Query)) > 100 {
 		bot.Send(tgbotapi.InlineConfig{
 			InlineQueryID: update.InlineQuery.ID,
 			Results:       []interface{}{},
