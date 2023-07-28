@@ -97,7 +97,7 @@ func handleInlineQuery(ctx context.Context, videoGen *videogen.VideoGenerator, b
 		return
 	}
 
-	log.Println(fmt.Sprintf("uploaded video: %s", videoMsgSent.Video.FileID))
+	log.Println(fmt.Sprintf("uploaded video: %s (query: %s)", videoMsgSent.Video.FileID, update.InlineQuery.Query))
 
 	answer := tgbotapi.NewInlineQueryResultCachedVideo(uuid.New().String(), videoMsgSent.Video.FileID, "Send video")
 	bot.Send(tgbotapi.InlineConfig{

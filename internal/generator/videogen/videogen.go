@@ -51,7 +51,7 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	if _, err := os.Stat(framesPath); os.IsNotExist(err) {
 		err = os.MkdirAll(framesPath, 0700)
 		if err != nil {
-			log.Print(op+": unable to mkdir: "+framesPath, err)
+			log.Println(op+": unable to mkdir: "+framesPath, err)
 		}
 	}
 
@@ -102,7 +102,6 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 				return "", 0, "", fmt.Errorf(op + ": context closed")
 			}
 
-			log.Println(fmt.Sprintf("frame %d %s", currentFrame, string(runeRow[:rowShift+1])))
 			go func(img *image.RGBA, framesStart int, framesCount int) {
 				defer wg.Done()
 
