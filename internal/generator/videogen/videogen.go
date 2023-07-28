@@ -166,7 +166,7 @@ func (g *VideoGenerator) NewStringVideo(ctx context.Context, input string) (stri
 
 	framesPath, _, id, err := g.GenerateFrames(framesGenCtx, input)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("generate frames errored: %w", err)
 	}
 
 	defer os.RemoveAll(framesPath)
