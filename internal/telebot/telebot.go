@@ -43,6 +43,7 @@ func handleUpdate(
 		prevCancel, exists := usersContexts[update.InlineQuery.From.ID]
 		if exists && prevCancel != nil {
 			(*prevCancel)()
+			log.Println("previos cancelled")
 		}
 		usersContexts[update.InlineQuery.From.ID] = &cancelContext
 
@@ -87,6 +88,10 @@ func handleInlineQuery(ctx context.Context, videoGen *videogen.VideoGenerator, b
 		return
 	}
 
+	if ctx.Err() != nil {
+		return
+	}
+
 	videoMsg := tgbotapi.NewVideo(
 		botStorageChatID,
 		tgbotapi.FilePath(videoPath),
@@ -94,6 +99,10 @@ func handleInlineQuery(ctx context.Context, videoGen *videogen.VideoGenerator, b
 	videoMsgSent, err := bot.Send(videoMsg)
 	if err != nil {
 		log.Printf("error while sending video to storage chat: %s\n", err)
+		return
+	}
+
+	if ctx.Err() != nil {
 		return
 	}
 
