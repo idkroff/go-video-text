@@ -68,6 +68,7 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	currentFrame := 0
 	for i := 0; i < FPS; i++ {
 		if ctx.Err() != nil {
+			os.RemoveAll(framesPath)
 			return "", 0, "", fmt.Errorf(op + ": context closed")
 		}
 
@@ -93,13 +94,12 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 			img, err := g.ImageGen.UpdateStringImage(img, string(runeRow[:rowShift+1]), 0, rowI)
 			if err != nil {
 				os.RemoveAll(framesPath)
-
-				//TODO: add error handling?
-				return "", 0, "", err
+				return "", 0, "", fmt.Errorf("%s: updateStringImage errored: %w", op, err)
 			}
 
 			if ctx.Err() != nil {
-				return "", 0, "", fmt.Errorf(op + ": context closed")
+				os.RemoveAll(framesPath)
+				return "", 0, "", fmt.Errorf("%s: context closed", op)
 			}
 
 			go func(img *image.RGBA, framesStart int, framesCount int) {
@@ -107,6 +107,7 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 
 				for i := 0; i < framesCount; i++ {
 					if ctx.Err() != nil {
+						os.RemoveAll(framesPath)
 						return
 					}
 
@@ -131,7 +132,8 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	wg.Wait()
 	for i := 0; i < FPS*3; i++ {
 		if ctx.Err() != nil {
-			return "", 0, "", fmt.Errorf(op + ": context closed")
+			os.RemoveAll(framesPath)
+			return "", 0, "", fmt.Errorf("%s: context closed", op)
 		}
 
 		f, err := os.Create(filepath.Join(framesPath, fmt.Sprintf("%d.png", currentFrame)))
@@ -146,7 +148,8 @@ func (g *VideoGenerator) GenerateFrames(ctx context.Context, input string) (stri
 	}
 
 	if ctx.Err() != nil {
-		return "", 0, "", fmt.Errorf(op + ": context closed")
+		os.RemoveAll(framesPath)
+		return "", 0, "", fmt.Errorf("%s: context closed", op)
 	}
 
 	return framesPath, currentFrame, videoID, nil
@@ -159,7 +162,7 @@ func (g *VideoGenerator) NewStringVideo(ctx context.Context, input string) (stri
 		return "", fmt.Errorf("context closed")
 	}
 
-	framesGenCtx, cancelFramesGenCtx := context.WithTimeout(context.Background(), time.Minute)
+	framesGenCtx, cancelFramesGenCtx := context.WithTimeout(ctx, time.Minute)
 	defer func() {
 		cancelFramesGenCtx()
 	}()
@@ -170,6 +173,10 @@ func (g *VideoGenerator) NewStringVideo(ctx context.Context, input string) (stri
 	}
 
 	defer os.RemoveAll(framesPath)
+
+	if ctx.Err() != nil {
+		return "", fmt.Errorf("context closed")
+	}
 
 	cmd := exec.Command(
 		"ffmpeg",
