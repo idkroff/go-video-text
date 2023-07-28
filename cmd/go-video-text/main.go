@@ -33,5 +33,7 @@ func main() {
 		log.Fatalf("unable to set up bot api: %s", err)
 	}
 
+	log.Println("bot started")
+
 	telebot.HandleUpdates(tgbot, videoGen, config.BotStorageChatID)
 }
