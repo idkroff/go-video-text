@@ -75,7 +75,7 @@ func handleInlineQuery(ctx context.Context, videoGen *videogen.VideoGenerator, b
 		return
 	}
 
-	videoGenCtx, cancelVideoGenCtx := context.WithTimeout(context.Background(), time.Minute)
+	videoGenCtx, cancelVideoGenCtx := context.WithTimeout(ctx, time.Minute)
 	defer func() {
 		cancelVideoGenCtx()
 	}()
